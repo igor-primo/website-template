@@ -2,15 +2,18 @@
   description = "Empty Template";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-utils.url = "github:numtide/flake-utils";
     llm-agents.url = "github:numtide/llm-agents.nix";
+    devenv.url = "github:cachix/devenv";
+    devenv.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    { nixpkgs
+    inputs@{ nixpkgs
     , flake-utils
     , llm-agents
+    , devenv
     , ...
     }:
     flake-utils.lib.eachDefaultSystem
@@ -21,14 +24,35 @@
 
           nativeBuildInputs = with pkgs; [ ];
           buildInputs = with pkgs; [
-            llm-agents.packages."x86_64-linux".copilot-cli
           ];
         in
         {
-          devShells.default = pkgs.mkShell { inherit nativeBuildInputs buildInputs; };
+          devShells.default = devenv.lib.mkShell {
+            inherit inputs pkgs;
+            modules = [
+              ({ pkgs, config, ... }: {
+                packages = [
+                  llm-agents.packages."x86_64-linux".copilot-cli
+                ];
+                services.nginx = {
+                  enable = true;
+                  httpConfig = ''
+                    server {
+                      listen 8000;
+                      location / {
+                        root ${config.env.DEVENV_ROOT}/src;
+                        index index.html;
+                      }
+                    }
+                  '';
+                };
+                process.manager.implementation = "overmind";
+              })
+            ];
+          };
         }
       ) // {
-      nixosModules.default = { config, lib, pkgs, ... }:
+      nixosModules. default = { config, lib, pkgs, ... }:
         let
           websiteFiles = pkgs.runCommand "website" { } ''
             mkdir -p $out
@@ -36,7 +60,7 @@
           '';
         in
         {
-          options.services.website = {
+          options. services. website = {
             enable = lib.mkEnableOption "static website via nginx";
             hostname = lib.mkOption {
               type = lib.types.str;
