@@ -1,5 +1,5 @@
 {
-  description = "Empty Template";
+  description = "Simple website template";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
