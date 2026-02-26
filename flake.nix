@@ -21,10 +21,6 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-
-          nativeBuildInputs = with pkgs; [ ];
-          buildInputs = with pkgs; [
-          ];
         in
         {
           devShells.default = devenv.lib.mkShell {
