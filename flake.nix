@@ -29,6 +29,7 @@
               ({ pkgs, config, ... }: {
                 packages = [
                   llm-agents.packages."x86_64-linux".copilot-cli
+                  pkgs.live-server
                 ];
                 services.nginx = {
                   enable = true;
@@ -43,6 +44,7 @@
                   '';
                 };
                 process.manager.implementation = "overmind";
+                processes.live-server.exec = "live-server --hard --port 8000";
               })
             ];
           };
