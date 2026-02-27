@@ -31,20 +31,8 @@
                   llm-agents.packages."x86_64-linux".copilot-cli
                   pkgs.live-server
                 ];
-                services.nginx = {
-                  enable = true;
-                  httpConfig = ''
-                    server {
-                      listen 8000;
-                      location / {
-                        root ${config.env.DEVENV_ROOT}/src;
-                        index index.html;
-                      }
-                    }
-                  '';
-                };
                 process.manager.implementation = "overmind";
-                processes.live-server.exec = "live-server --hard --port 8000";
+                processes.live-server.exec = "live-server --open --hard --port 8000";
               })
             ];
           };
