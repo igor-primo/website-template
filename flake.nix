@@ -34,9 +34,10 @@
                   llm-agents.packages."x86_64-linux".copilot-cli
                   pkgs.live-server
                   pkgs.haskellPackages.hakyll
+                  self.packages.${system}.site
                 ];
-                scripts.build.exec = "nix run .#site -- build";
-                process.manager.implementation = "overmind";
+                scripts.build.exec = "site build";
+                processes.watch.exec = "site watch --no-server";
                 processes.live-server.exec = ''
                   cd _site
                   live-server --open --hard --port 8000
