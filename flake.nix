@@ -14,6 +14,7 @@
     , flake-utils
     , llm-agents
     , devenv
+    , self
     , ...
     }:
     flake-utils.lib.eachDefaultSystem
@@ -23,6 +24,8 @@
           pkgs = nixpkgs.legacyPackages.${system};
         in
         {
+          packages.site = pkgs.haskellPackages.callCabal2nix "site" ./. { };
+          apps.site = flake-utils.lib.mkApp { drv = self.packages.${system}.site; };
           devShells.default = devenv.lib.mkShell {
             inherit inputs pkgs;
             modules = [
@@ -30,9 +33,14 @@
                 packages = [
                   llm-agents.packages."x86_64-linux".copilot-cli
                   pkgs.live-server
+                  pkgs.haskellPackages.hakyll
                 ];
+                scripts.build.exec = "nix run .#site -- build";
                 process.manager.implementation = "overmind";
-                processes.live-server.exec = "live-server --open --hard --port 8000";
+                processes.live-server.exec = ''
+                  cd _site
+                  live-server --open --hard --port 8000
+                '';
               })
             ];
           };
